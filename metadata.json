@@ -1,0 +1,10 @@
+{
+  "name": "JantaMitra-AI",
+  "description": "An AI-powered citizen grievance redressal and civic action tracking platform with real-time analytics, multilingual voice inputs, and community verification voting loops.",
+  "requestFramePermissions": [
+    "geolocation"
+  ],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

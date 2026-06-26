@@ -1,0 +1,42 @@
+@import "tailwindcss";
+
+/* Force class-based dark mode so it ignores media-queries and stays in Light Mode */
+@custom-variant dark (&:where(.does-not-exist));
+
+@theme {
+  --font-sans: 'Outfit', 'Inter', system-ui, -apple-system, sans-serif;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+/* Global Font Overrides for extreme consistency */
+html, body, button, input, select, textarea, h1, h2, h3, h4, h5, h6, span, p, a, label, strong {
+  font-family: 'Outfit', 'Inter', system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif !important;
+}
+
+body {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background-color: #fcfdfe; /* soft premium background */
+}
+
+/* Beautiful custom modern scrollbars */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(100, 116, 139, 0.2);
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(100, 116, 139, 0.4);
+}
