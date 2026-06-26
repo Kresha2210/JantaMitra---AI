@@ -4,6 +4,9 @@ JantaMitra AI is a AI-Powered Civic Grievance & Resolution Platform designed to 
 
 ---
 
+**Live Deployed Link**: https://jantamitra-ai-248847840525.asia-southeast1.run.app
+
+---
 > **🏆 Vibe2ship Hackathon Project**
 > 
 > * **Developer**: Kresha Vora
