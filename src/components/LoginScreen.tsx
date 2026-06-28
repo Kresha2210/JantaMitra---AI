@@ -18,6 +18,7 @@ export default function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
   const [otpValue, setOtpValue] = useState("");
   const [otpSentToast, setOtpSentToast] = useState(false);
   const [otpError, setOtpError] = useState("");
+  const [receivedOtp, setReceivedOtp] = useState("");
 
   // Authority states
   const [govtId, setGovtId] = useState("");
@@ -51,6 +52,9 @@ export default function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
       if (response.ok && data.success) {
         setShowOtpField(true);
         setOtpSentToast(true);
+        if (data.otp) {
+          setReceivedOtp(data.otp);
+        }
         // Auto dismiss toast after 10s
         setTimeout(() => setOtpSentToast(false), 10000);
       } else {
@@ -143,6 +147,15 @@ export default function LoginScreen({ onLoginSuccess }: LoginScreenProps) {
             <p className="text-xs text-slate-200 mt-1 leading-normal">
               A verification OTP code has been dispatched to <strong className="text-blue-300 font-bold">+91 {citizenPhone}</strong>. Please check your physical mobile device.
             </p>
+            {receivedOtp && (
+              <div className="mt-3 p-2.5 bg-slate-800 border border-slate-700/60 rounded-xl text-center flex flex-col items-center justify-center gap-1.5">
+                <span className="text-[10px] text-slate-400 uppercase tracking-wider font-extrabold">Active OTP (Fallback/Demo Mode)</span>
+                <span className="text-2xl font-black text-emerald-400 tracking-widest">{receivedOtp}</span>
+                <span className="text-[10px] text-amber-300 leading-normal max-w-xs mt-0.5 font-medium">
+                  Twilio account limit exceeded so that OTP will not be coming to your phone. Please enter this OTP.
+                </span>
+              </div>
+            )}
           </div>
         </div>
       )}
