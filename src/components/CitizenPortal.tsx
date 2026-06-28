@@ -37,10 +37,11 @@ interface CitizenPortalProps {
 
 // Preset Indian Address coordinates
 const PRESET_INDIAN_ADDRESSES: Location[] = [
-  { area: "M G Road Walkway", city: "Bengaluru", district: "Bengaluru Urban", pincode: "560001", state: "Karnataka", latitude: 12.9716, longitude: 77.5946 },
-  { area: "Salt Lake City Sector 5", city: "Kolkata", district: "North 24 Parganas", pincode: "700091", state: "West Bengal", latitude: 22.5726, longitude: 88.4233 },
   { area: "Colaba Causeway near Taj", city: "Mumbai", district: "Mumbai City", pincode: "400005", state: "Maharashtra", latitude: 18.9261, longitude: 72.8224 },
+  { area: "M G Road Walkway", city: "Bengaluru", district: "Bengaluru Urban", pincode: "560001", state: "Karnataka", latitude: 12.9716, longitude: 77.5946 },
+  { area: "F C Road near Deccan", city: "Pune", district: "Pune", pincode: "411004", state: "Maharashtra", latitude: 18.5204, longitude: 73.8567 },
   { area: "Rajouri Garden Block D", city: "New Delhi", district: "West Delhi", pincode: "110027", state: "Delhi", latitude: 28.6448, longitude: 77.1902 },
+  { area: "Salt Lake City Sector 5", city: "Kolkata", district: "North 24 Parganas", pincode: "700091", state: "West Bengal", latitude: 22.5726, longitude: 88.4233 },
   { area: "T Nagar Shopping Area", city: "Chennai", district: "Chennai District", pincode: "600017", state: "Tamil Nadu", latitude: 13.0405, longitude: 80.2337 },
   { area: "Gachibowli Tech Circle", city: "Hyderabad", district: "Rangareddy", pincode: "500032", state: "Telangana", latitude: 17.4483, longitude: 78.3741 }
 ];
@@ -110,6 +111,7 @@ export default function CitizenPortal({
   const [latVal, setLatVal] = useState<number>(20.5937);
   const [lngVal, setLngVal] = useState<number>(78.9629);
   const [locationFetchedAlert, setLocationFetchedAlert] = useState(false);
+  const [isVirtualGPSUsed, setIsVirtualGPSUsed] = useState(false);
 
   const [isGettingLocation, setIsGettingLocation] = useState(false);
   const [isTranslating, setIsTranslating] = useState(false);
@@ -198,6 +200,7 @@ export default function CitizenPortal({
   const handleGetLocation = () => {
     setIsGettingLocation(true);
     setLocationFetchedAlert(false);
+    setIsVirtualGPSUsed(false);
     
     // Attempt real browser geolocation or fallback
     if (navigator.geolocation) {
@@ -218,6 +221,7 @@ export default function CitizenPortal({
             setDistrictInput(address.district);
             setPincodeInput(address.pincode);
             setStateInput(address.state);
+            setIsVirtualGPSUsed(!!address.isVirtualGPS);
           } catch (error) {
             console.warn("Reverse geocoding API failed, falling back to realistic presets:", error);
             const randomAddress = PRESET_INDIAN_ADDRESSES[Math.floor(Math.random() * PRESET_INDIAN_ADDRESSES.length)];
@@ -226,6 +230,7 @@ export default function CitizenPortal({
             setDistrictInput(randomAddress.district);
             setPincodeInput(randomAddress.pincode);
             setStateInput(randomAddress.state);
+            setIsVirtualGPSUsed(true);
           } finally {
             setIsGettingLocation(false);
             setLocationFetchedAlert(true);
@@ -241,6 +246,7 @@ export default function CitizenPortal({
           setStateInput(randomAddress.state);
           setLatVal(randomAddress.latitude);
           setLngVal(randomAddress.longitude);
+          setIsVirtualGPSUsed(true);
           setIsGettingLocation(false);
           setLocationFetchedAlert(true);
         },
@@ -255,9 +261,22 @@ export default function CitizenPortal({
       setStateInput(randomAddress.state);
       setLatVal(randomAddress.latitude);
       setLngVal(randomAddress.longitude);
+      setIsVirtualGPSUsed(true);
       setIsGettingLocation(false);
       setLocationFetchedAlert(true);
     }
+  };
+
+  const handleApplyCityPreset = (preset: Location) => {
+    setAreaInput(preset.area);
+    setCityInput(preset.city);
+    setDistrictInput(preset.district);
+    setPincodeInput(preset.pincode);
+    setStateInput(preset.state);
+    setLatVal(preset.latitude);
+    setLngVal(preset.longitude);
+    setIsVirtualGPSUsed(false);
+    setLocationFetchedAlert(true);
   };
 
   // Upload image helper (converts to base64 with 5MB validation)
@@ -722,11 +741,56 @@ export default function CitizenPortal({
                       </div>
 
                       {locationFetchedAlert && (
-                        <div className="bg-emerald-50/55 dark:bg-emerald-950/20 border border-emerald-100 dark:border-emerald-900/50 text-emerald-800 dark:text-emerald-300 p-2 rounded text-[11px] font-semibold flex items-center gap-1 animate-fadeIn">
-                          <CheckCircle className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
-                          Address loaded successfully! Feel free to modify below.
+                        <div className="bg-emerald-50/55 dark:bg-emerald-950/20 border border-emerald-100 dark:border-emerald-900/50 text-emerald-800 dark:text-emerald-300 p-2.5 rounded-xl text-[11px] font-semibold flex items-center gap-1.5 animate-fadeIn">
+                          <CheckCircle className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
+                          <span>Address loaded successfully! Feel free to modify below.</span>
                         </div>
                       )}
+
+                      {isVirtualGPSUsed && (
+                        <div className="p-3 bg-amber-50 dark:bg-amber-950/20 border border-amber-100 dark:border-amber-900/40 rounded-xl text-[11px] text-amber-800 dark:text-amber-300 leading-relaxed flex flex-col gap-1 animate-fadeIn">
+                          <div className="flex items-center gap-1.5 font-extrabold text-amber-900 dark:text-amber-200">
+                            <span>📌</span>
+                            <span>Virtual GPS Active (India Fallback)</span>
+                          </div>
+                          <p className="text-slate-600 dark:text-slate-300">
+                            Your system or browser returned coordinates outside India (likely due to sandbox environment or cloud hosting). We mapped you to a high-quality Indian municipal region!
+                          </p>
+                          <p className="font-semibold text-amber-900 dark:text-amber-200 mt-1">
+                            Feel free to refine below, or click any preset city to load accurate ward data.
+                          </p>
+                        </div>
+                      )}
+
+                      {/* Quick select Indian cities */}
+                      <div className="bg-slate-50 dark:bg-slate-800/10 p-2.5 rounded-xl border border-slate-100 dark:border-slate-800/40 space-y-1.5">
+                        <span className="text-[10px] text-slate-500 dark:text-slate-400 font-extrabold uppercase tracking-wider block">
+                          📍 Quick Indian City Presets (One-Click Correction)
+                        </span>
+                        <div className="flex flex-wrap gap-1.5">
+                          {PRESET_INDIAN_ADDRESSES.map((preset) => (
+                            <button
+                              key={preset.city}
+                              type="button"
+                              onClick={() => handleApplyCityPreset(preset)}
+                              className={`px-2.5 py-1 text-[11px] font-bold rounded-lg border transition-all cursor-pointer ${
+                                cityInput.toLowerCase() === preset.city.toLowerCase()
+                                  ? "bg-blue-50 dark:bg-blue-950/40 border-blue-200 dark:border-blue-900 text-blue-700 dark:text-blue-300 shadow-sm"
+                                  : "bg-white dark:bg-slate-800 border-slate-200/80 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700"
+                              }`}
+                            >
+                              {preset.city === "Mumbai" && "🏢 "}
+                              {preset.city === "Bengaluru" && "🌳 "}
+                              {preset.city === "Pune" && "⛰️ "}
+                              {preset.city === "New Delhi" && "🏛️ "}
+                              {preset.city === "Kolkata" && "🌉 "}
+                              {preset.city === "Chennai" && "🌊 "}
+                              {preset.city === "Hyderabad" && "🕌 "}
+                              {preset.city}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
 
                       <div className="space-y-2.5">
                         <div>
@@ -834,7 +898,7 @@ export default function CitizenPortal({
                         <textarea
                           rows={4}
                           required
-                          placeholder="Provide descriptive details of the problem (e.g., location landmarks, when it started, hazard risk). You can type in Hindi (हिंदी), Tamil (à®¤à®®à®¿à®´à¯), Telugu (à°¤à±†à°²à±à°—à±), Marathi (àª®àª°àª¾à¤ à¥€), Bengali, Kannada, etc. — AI will translate automatically."
+                          placeholder="Provide descriptive details of the problem (e.g., location landmarks, when it started, hazard risk). You can type in Hindi (हिंदी), Tamil, Telugu, Marathi, Bengali, Kannada, etc. — AI will translate automatically."
                           value={issueDesc}
                           onChange={(e) => {
                             setIssueDesc(e.target.value);
