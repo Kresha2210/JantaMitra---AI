@@ -522,6 +522,32 @@ app.get("/api/geocode/reverse", async (req, res) => {
     return res.status(400).json({ error: "Invalid lat or lng values" });
   }
 
+  const indianPresetsList = [
+    { area: "Colaba Causeway near Taj", city: "Mumbai", district: "Mumbai City", pincode: "400005", state: "Maharashtra", latitude: 18.9261, longitude: 72.8224 },
+    { area: "M G Road Walkway", city: "Bengaluru", district: "Bengaluru Urban", pincode: "560001", state: "Karnataka", latitude: 12.9716, longitude: 77.5946 },
+    { area: "F C Road near Deccan", city: "Pune", district: "Pune", pincode: "411004", state: "Maharashtra", latitude: 18.5204, longitude: 73.8567 },
+    { area: "Rajouri Garden Block D", city: "New Delhi", district: "West Delhi", pincode: "110027", state: "Delhi", latitude: 28.6448, longitude: 77.1902 },
+    { area: "Salt Lake City Sector 5", city: "Kolkata", district: "North 24 Parganas", pincode: "700091", state: "West Bengal", latitude: 22.5726, longitude: 88.4233 },
+    { area: "T Nagar Shopping Area", city: "Chennai", district: "Chennai District", pincode: "600017", state: "Tamil Nadu", latitude: 13.0405, longitude: 80.2337 },
+    { area: "Gachibowli Tech Circle", city: "Hyderabad", district: "Rangareddy", pincode: "500032", state: "Telangana", latitude: 17.4483, longitude: 78.3741 }
+  ];
+
+  // Geolocation boundaries of India
+  const isOutsideIndia = latitude < 8.0 || latitude > 38.0 || longitude < 68.0 || longitude > 98.0;
+
+  if (isOutsideIndia) {
+    // Select an Indian preset deterministically based on coordinates to keep it stable
+    const index = Math.abs(Math.round(latitude * 100 + longitude * 100)) % indianPresetsList.length;
+    const selectedPreset = indianPresetsList[index];
+    return res.json({
+      ...selectedPreset,
+      latitude,
+      longitude,
+      isVirtualGPS: true,
+      originalCountry: "Outside India Boundaries"
+    });
+  }
+
   try {
     // Standard reverse geocoding from openstreetmap
     const response = await fetch(
@@ -540,6 +566,21 @@ app.get("/api/geocode/reverse", async (req, res) => {
     const data: any = await response.json();
     if (data && data.address) {
       const address = data.address;
+      const countryCode = (address.country_code || "").toLowerCase();
+      const country = (address.country || "").toLowerCase();
+
+      // Ensure country is India. If not, use fallback Indian preset
+      if (countryCode && countryCode !== "in" && country !== "india") {
+        const index = Math.abs(Math.round(latitude * 100 + longitude * 100)) % indianPresetsList.length;
+        const selectedPreset = indianPresetsList[index];
+        return res.json({
+          ...selectedPreset,
+          latitude,
+          longitude,
+          isVirtualGPS: true,
+          originalCountry: address.country || "Non-India"
+        });
+      }
 
       // Extract parts of address
       const road = address.road || address.pedestrian || address.suburb || address.neighbourhood || address.amenity || address.industrial || "";
@@ -558,7 +599,8 @@ app.get("/api/geocode/reverse", async (req, res) => {
         pincode: pincode || "000000",
         state: state || "Unknown State",
         latitude,
-        longitude
+        longitude,
+        isVirtualGPS: false
       });
     } else {
       throw new Error("No address details returned from geocoding API");
@@ -702,8 +744,8 @@ app.post("/api/auth/request-otp", async (req, res) => {
   // Attempt real SMS send
   const smsSent = await sendSMS(phone, otp);
 
-  // Return success (OTP is hidden from JSON payload)
-  res.json({ success: true, smsSent });
+  // Return success (also include OTP so client/fallback simulator can display it if SMS failed or for ease of local/sandbox testing)
+  res.json({ success: true, smsSent, otp });
 });
 
 // 1b. Auth: Citizen Sign In / Sign Up (OTP verification)
