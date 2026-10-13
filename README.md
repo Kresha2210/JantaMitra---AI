@@ -7,14 +7,6 @@ JantaMitra AI is a AI-Powered Civic Grievance & Resolution Platform designed to 
 **Live Deployed Link**: https://jantamitra-ai-248847840525.asia-southeast1.run.app
 
 ---
-> **🏆 Vibe2ship Hackathon Project**
-> 
-> * **Developer**: Kresha Vora
-> * **Project Type**: Community Hero - Hyperlocal Problem Solver
-> * **Vibe Coding & AI Tools**: Google AI Studio, Gemini 2.5 Flash API, Gemini Code Assist, and Antigravity IDE (Gemini-driven coding assistant).
-
----
-
 ## 🌟 Why JantaMitra AI is Best for Local Communities
 
 Traditional municipal grievance portals are often slow, non-transparent, and lack civic engagement. JantaMitra AI is built differently:
